@@ -1,85 +1,77 @@
 
 import streamlit as st
-from transformers import pipeline
-from PIL import Image
-import torch
-import os
 
-# ------------------------
-# Inicialización de modelos
-# ------------------------
-@st.cache_resource
-def cargar_modelos():
-    generador_texto = pipeline("text-generation", model="distilgpt2")
-    resumen = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
-    return generador_texto, resumen
-
-generador_texto, resumen = cargar_modelos()
-
-# ------------------------
-# Configuración general
-# ------------------------
-st.set_page_config(page_title="AI Snack Content Generator", layout="centered")
-st.title("🍿 Generador de Contenido para Snacks Saludables")
-st.markdown("Genera descripciones, imágenes y resúmenes de feedback usando IA Generativa.")
-
-# ------------------------
-# Sidebar - navegación
-# ------------------------
-modulo = st.sidebar.selectbox(
-    "Selecciona módulo",
-    [
-        "Descripciones de producto",
-        "Imágenes promocionales",
-        "Resumen de comentarios"
-    ]
+# --------------------------
+# Configuración de la página
+# --------------------------
+st.set_page_config(
+    page_title="AI Snack Content Generator",
+    page_icon="🍿",
+    layout="centered",
+    initial_sidebar_state="auto"
 )
 
-# ------------------------
-# Módulo 1: Descripciones
-# ------------------------
-if modulo == "Descripciones de producto":
-    st.subheader("📝 Generador de Descripciones")
-    nombre = st.text_input("Nombre del producto", "Snack Natural de Quinoa")
-    ingredientes = st.text_input("Ingredientes clave", "quinoa, chía, miel")
-    beneficio = st.text_input("Beneficio principal", "energía saludable durante el día")
-    tono = st.selectbox("Tono del mensaje", ["juvenil", "natural", "profesional"])
+# --------------------------
+# Título principal
+# --------------------------
+st.title("🍿 Generador de Contenido para Snacks Saludables")
+st.write("Genera descripciones, imágenes y resúmenes de feedback usando IA Generativa.")
 
-    prompt = f"Crea una descripción para un snack saludable llamado {nombre}. Tiene {ingredientes} y es ideal para {beneficio}. Usa un tono {tono}. Longitud: 2 a 3 líneas."
+# --------------------------
+# Barra lateral para seleccionar módulo
+# --------------------------
+modulo = st.sidebar.selectbox(
+    "Selecciona módulo",
+    ("Descripciones de producto", "Resumen de comentarios")
+)
+
+# --------------------------
+# Módulo: Generador de descripciones
+# --------------------------
+if modulo == "Descripciones de producto":
+    st.header("📝 Generador de Descripciones")
+
+    nombre_producto = st.text_input("Nombre del producto", value="Snack Natural de Quinoa")
+    ingredientes = st.text_input("Ingredientes clave", value="quinoa, chía, miel")
+    beneficio = st.text_input("Beneficio principal", value="energía saludable durante el día")
+    tono = st.selectbox("Tono del mensaje", ["juvenil", "profesional", "amigable", "informativo"])
 
     if st.button("Generar descripción"):
-        salida = generador_texto(prompt, max_length=50, num_return_sequences=1)[0]['generated_text']
+        if tono == "juvenil":
+            descripcion = f"¡Disfruta {nombre_producto} con {ingredientes}! Perfecto para quienes buscan {beneficio} sin dejar de lado el sabor. ¡Ideal para llevar y compartir!"
+        elif tono == "profesional":
+            descripcion = f"{nombre_producto} combina {ingredientes} para ofrecerte {beneficio}. Una elección inteligente para un estilo de vida saludable."
+        elif tono == "amigable":
+            descripcion = f"¿Con antojo de algo rico y natural? Prueba {nombre_producto} con {ingredientes}. Te dará {beneficio} en cualquier momento del día."
+        elif tono == "informativo":
+            descripcion = f"{nombre_producto} es un snack saludable hecho con {ingredientes}, diseñado para brindar {beneficio} de forma práctica y nutritiva."
+
         st.success("Descripción generada:")
-        st.write(salida)
+        st.write(descripcion)
 
-# ------------------------
-# Módulo 2: Imágenes
-# ------------------------
-elif modulo == "Imágenes promocionales":
-    st.subheader("🖼️ Generador de Imágenes con Prompt")
-    prompt_imagen = st.text_input(
-        "Describe tu imagen (en inglés)",
-        "A healthy quinoa snack on a minimalist pastel background, top view"
-    )
-    st.info("Este módulo requiere integración con Stable Diffusion o uso externo de imagen (simulado aquí).")
-    if st.button("Generar imagen (simulada)"):
-        imagen_demo = Image.open("demo_snack.jpg") if os.path.exists("demo_snack.jpg") else Image.new("RGB", (512, 512), color="lightgray")
-        st.image(imagen_demo, caption="Imagen generada (simulada)", use_column_width=True)
-
-# ------------------------
-# Módulo 3: Feedback
-# ------------------------
+# --------------------------
+# Módulo: Resumen de comentarios
+# --------------------------
 elif modulo == "Resumen de comentarios":
-    st.subheader("💬 Resumen de Feedback de Clientes")
-    comentarios = st.text_area(
-        "Pega varios comentarios de clientes (1 por línea):",
-        """Me encantó el sabor, muy natural.
-Podría venir en más tamaños.
-Es práctico pero un poco caro.
-Excelente opción post entrenamiento."""
-    )
+    st.header("💬 Resumen de Feedback de Clientes")
+    comentarios = st.text_area("Pega varios comentarios de clientes (1 por línea):")
+
     if st.button("Generar resumen"):
-        texto = comentarios.replace("\n", ". ")
-        resultado = resumen(texto, max_length=100, min_length=30, do_sample=False)
+        lineas = comentarios.strip().split("\n")
+        resumen = []
+
+        for linea in lineas:
+            if "sabor" in linea.lower():
+                resumen.append("Buen sabor.")
+            elif "tamaño" in linea.lower():
+                resumen.append("Podría mejorar el tamaño.")
+            elif "caro" in linea.lower():
+                resumen.append("Precio percibido como alto.")
+            elif "entrenamiento" in linea.lower():
+                resumen.append("Bueno para después del entrenamiento.")
+            elif linea.strip() != "":
+                resumen.append(linea.strip())
+
+        resumen_final = " ".join(resumen)
         st.success("Resumen generado:")
-        st.write(resultado[0]['summary_text'])
+        st.write(resumen_final)
