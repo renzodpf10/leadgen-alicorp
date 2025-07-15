@@ -80,5 +80,7 @@ Puedes correr la app localmente o desplegarla en Streamlit Cloud.
 
 ## 📬 Contacto
 **Renzo Del Pozo Fernández**  
-renzo.delpozo@auna.org  
-www.linkedin.com/in/renzodelpozo
+Cel: +51934808491
+mail: renzodelpozo@gmail.com
+linkedin: https://www.linkedin.com/in/renzo-del-pozo-fern%C3%A1ndez/
+
