@@ -11,7 +11,7 @@ import os
 @st.cache_resource
 def cargar_modelos():
     generador_texto = pipeline("text-generation", model="distilgpt2")
-    resumen = pipeline("summarization", model="facebook/bart-large-cnn")
+    resumen = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
     return generador_texto, resumen
 
 generador_texto, resumen = cargar_modelos()
